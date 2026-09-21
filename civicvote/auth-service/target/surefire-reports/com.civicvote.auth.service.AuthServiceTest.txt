@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.civicvote.auth.service.AuthServiceTest
+-------------------------------------------------------------------------------
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.846 s -- in com.civicvote.auth.service.AuthServiceTest

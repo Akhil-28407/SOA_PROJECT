@@ -1,0 +1,15 @@
+/Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/auth-service/src/main/java/com/civicvote/auth/AuthServiceApplication.java
+/Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/auth-service/src/main/java/com/civicvote/auth/config/SecurityConfig.java
+/Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/auth-service/src/main/java/com/civicvote/auth/controller/AuthController.java
+/Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/auth-service/src/main/java/com/civicvote/auth/dto/AuthResponse.java
+/Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/auth-service/src/main/java/com/civicvote/auth/dto/ErrorResponse.java
+/Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/auth-service/src/main/java/com/civicvote/auth/dto/LoginRequest.java
+/Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/auth-service/src/main/java/com/civicvote/auth/dto/RegisterRequest.java
+/Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/auth-service/src/main/java/com/civicvote/auth/entity/Role.java
+/Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/auth-service/src/main/java/com/civicvote/auth/entity/User.java
+/Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/auth-service/src/main/java/com/civicvote/auth/exception/DuplicateResourceException.java
+/Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/auth-service/src/main/java/com/civicvote/auth/exception/GlobalExceptionHandler.java
+/Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/auth-service/src/main/java/com/civicvote/auth/exception/InvalidCredentialsException.java
+/Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/auth-service/src/main/java/com/civicvote/auth/repository/UserRepository.java
+/Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/auth-service/src/main/java/com/civicvote/auth/security/JwtUtil.java
+/Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/auth-service/src/main/java/com/civicvote/auth/service/AuthService.java

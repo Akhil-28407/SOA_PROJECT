@@ -1,0 +1,3 @@
+com/civicvote/gateway/filter/AuthenticationFilter$PathRoleRule.class
+com/civicvote/gateway/ApiGatewayApplication.class
+com/civicvote/gateway/filter/AuthenticationFilter.class
