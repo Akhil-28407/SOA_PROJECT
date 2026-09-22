@@ -9,15 +9,15 @@ public class Candidate {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "candidate_id")
-    private Long candidateId;
+    @Column(name = "id")
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "election_id", nullable = false)
     private Election election;
 
-    @Column(name = "candidate_name", nullable = false, length = 100)
-    private String candidateName;
+    @Column(name = "name", nullable = false, length = 100)
+    private String name;
 
     @Column(length = 500)
     private String description;
@@ -33,21 +33,27 @@ public class Candidate {
     // Constructors
     public Candidate() {}
 
-    public Candidate(String candidateName, String description, Election election) {
-        this.candidateName = candidateName;
+    public Candidate(String name, String description, Election election) {
+        this.name = name;
         this.description = description;
         this.election = election;
     }
 
     // Getters and Setters
-    public Long getCandidateId() { return candidateId; }
-    public void setCandidateId(Long candidateId) { this.candidateId = candidateId; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Long getCandidateId() { return id; }
+    public void setCandidateId(Long candidateId) { this.id = candidateId; }
 
     public Election getElection() { return election; }
     public void setElection(Election election) { this.election = election; }
 
-    public String getCandidateName() { return candidateName; }
-    public void setCandidateName(String candidateName) { this.candidateName = candidateName; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getCandidateName() { return name; }
+    public void setCandidateName(String candidateName) { this.name = candidateName; }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }

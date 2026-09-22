@@ -2,11 +2,13 @@
 
 ## Database Per Service
 
-Each microservice owns its own PostgreSQL database, demonstrating proper microservice data ownership.
+Each microservice owns its own isolated PostgreSQL database, demonstrating proper microservice data ownership and decoupled storage.
+
+---
 
 ## Schema Definitions
 
-### civicvote_auth
+### 1. civicvote_auth
 
 ```sql
 CREATE TABLE users (
@@ -20,11 +22,11 @@ CREATE TABLE users (
 );
 ```
 
-### civicvote_election
+### 2. civicvote_election
 
 ```sql
 CREATE TABLE elections (
-    election_id     BIGSERIAL PRIMARY KEY,
+    id              BIGSERIAL PRIMARY KEY,
     title           VARCHAR(200) NOT NULL,
     description     VARCHAR(1000),
     start_date      TIMESTAMP NOT NULL,
@@ -34,34 +36,34 @@ CREATE TABLE elections (
 );
 
 CREATE TABLE candidates (
-    candidate_id    BIGSERIAL PRIMARY KEY,
-    election_id     BIGINT NOT NULL REFERENCES elections(election_id),
-    candidate_name  VARCHAR(100) NOT NULL,
+    id              BIGSERIAL PRIMARY KEY,
+    election_id     BIGINT NOT NULL REFERENCES elections(id) ON DELETE CASCADE,
+    name            VARCHAR(100) NOT NULL,
     description     VARCHAR(500),
     created_at      TIMESTAMP NOT NULL
 );
 ```
 
-### civicvote_voting
+### 3. civicvote_voting
 
 ```sql
 CREATE TABLE votes (
-    vote_id           BIGSERIAL PRIMARY KEY,
-    voter_reference   VARCHAR(255) NOT NULL,
-    election_id       BIGINT NOT NULL,
-    candidate_id      BIGINT NOT NULL,
-    cast_at           TIMESTAMP NOT NULL,
-    CONSTRAINT uk_voter_election UNIQUE (voter_reference, election_id)
+    id              BIGSERIAL PRIMARY KEY,
+    user_id         BIGINT NOT NULL,
+    election_id     BIGINT NOT NULL,
+    candidate_id    BIGINT NOT NULL,
+    cast_at         TIMESTAMP NOT NULL,
+    CONSTRAINT uk_user_election UNIQUE (user_id, election_id)
 );
 ```
 
-**Key constraint:** `UNIQUE(voter_reference, election_id)` — ensures one vote per user per election at the database level.
+**Key Constraint**: `UNIQUE(user_id, election_id)` — strictly enforces one vote per voter per election at the PostgreSQL database level.
 
-### civicvote_result
+### 4. civicvote_result
 
 ```sql
 CREATE TABLE results (
-    result_id       BIGSERIAL PRIMARY KEY,
+    id              BIGSERIAL PRIMARY KEY,
     election_id     BIGINT NOT NULL,
     candidate_id    BIGINT NOT NULL,
     vote_count      BIGINT NOT NULL DEFAULT 0,
@@ -70,32 +72,21 @@ CREATE TABLE results (
 );
 ```
 
-## Entity Relationships
+---
 
-```
-users (civicvote_auth)
-  |
-  | voter_reference
-  v
-votes (civicvote_voting)  ──→ results (civicvote_result)
-  |                              |
-  | election_id                  | election_id
-  | candidate_id                 | candidate_id
-  v                              v
-elections (civicvote_election)
-  |
-  | 1:Many
-  v
-candidates (civicvote_election)
-```
+## Summary of Schemas
+
+| Service | Database Name | Table Name | Key Columns | Constraints |
+|---|---|---|---|---|
+| **Auth Service** | `civicvote_auth` | `users` | `id`, `username`, `email`, `password`, `role` | PK(`id`), UNIQUE(`username`), UNIQUE(`email`) |
+| **Election Service** | `civicvote_election` | `elections`<br>`candidates` | `id`, `title`, `start_date`, `end_date`<br>`id`, `election_id`, `name` | PK(`id`)<br>PK(`id`), FK(`election_id`) |
+| **Voting Service** | `civicvote_voting` | `votes` | `id`, `user_id`, `election_id`, `candidate_id` | PK(`id`), **UNIQUE(`user_id`, `election_id`)** |
+| **Result Service** | `civicvote_result` | `results` | `id`, `election_id`, `candidate_id`, `vote_count` | PK(`id`), UNIQUE(`election_id`, `candidate_id`) |
+
+---
 
 ## Data Integrity Guarantees
 
-| Mechanism | Purpose |
-|-----------|---------|
-| `PRIMARY KEY` | Unique row identification |
-| `FOREIGN KEY` (candidates → elections) | Referential integrity |
-| `UNIQUE(voter_reference, election_id)` | One-vote-per-user |
-| `UNIQUE(election_id, candidate_id)` in results | One result row per candidate per election |
-| `NOT NULL` constraints | Required fields enforcement |
-| `@Transactional` in Java | Atomic operations |
+* **Duplicate Vote Prevention**: Guaranteed by `UNIQUE(user_id, election_id)` on the `votes` table.
+* **Ballot Privacy**: Voting Service tallies votes in Result Service anonymously via OpenFeign sending only `{electionId, candidateId}`. No `user_id` is passed into `civicvote_result`.
+* **ACID Transactions**: Handled via Spring Data JPA and `@Transactional` to prevent partial updates.

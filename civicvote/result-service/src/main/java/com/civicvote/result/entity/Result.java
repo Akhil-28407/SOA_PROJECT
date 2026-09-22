@@ -11,8 +11,8 @@ public class Result {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "result_id")
-    private Long resultId;
+    @Column(name = "id")
+    private Long id;
 
     @Column(name = "election_id", nullable = false)
     private Long electionId;
@@ -42,8 +42,11 @@ public class Result {
     }
 
     // Getters and Setters
-    public Long getResultId() { return resultId; }
-    public void setResultId(Long resultId) { this.resultId = resultId; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Long getResultId() { return id; }
+    public void setResultId(Long resultId) { this.id = resultId; }
 
     public Long getElectionId() { return electionId; }
     public void setElectionId(Long electionId) { this.electionId = electionId; }

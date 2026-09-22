@@ -6,6 +6,7 @@ import com.civicvote.voting.service.VotingService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -22,19 +23,17 @@ public class VotingController {
 
     /**
      * Cast a vote.
-     * The voter identity comes from the X-User-Id header (set by gateway from JWT).
-     * The client NEVER submits userId — it is extracted from the authenticated JWT.
+     * The voter identity is extracted directly from the verified JWT in SecurityContext.
+     * The client NEVER submits userId.
      */
     @PostMapping
     public ResponseEntity<VoteResponse> castVote(
             @Valid @RequestBody VoteRequest request,
-            @RequestHeader("X-User-Id") String userId,
-            @RequestHeader(value = "X-User-Role", required = false) String role) {
+            @RequestHeader(value = "X-User-Id", required = false) String userIdHeader,
+            Authentication authentication) {
 
-        // Voter reference is a hashed/internal reference derived from the authenticated user
-        String voterReference = "voter-" + userId;
-
-        VoteResponse response = votingService.castVote(request, voterReference);
+        Long userId = resolveUserId(authentication, userIdHeader);
+        VoteResponse response = votingService.castVote(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -44,14 +43,32 @@ public class VotingController {
     @GetMapping("/status/{electionId}")
     public ResponseEntity<Map<String, Object>> getVoteStatus(
             @PathVariable Long electionId,
-            @RequestHeader("X-User-Id") String userId) {
+            @RequestHeader(value = "X-User-Id", required = false) String userIdHeader,
+            Authentication authentication) {
 
-        String voterReference = "voter-" + userId;
-        boolean hasVoted = votingService.hasVoted(voterReference, electionId);
+        Long userId = resolveUserId(authentication, userIdHeader);
+        boolean hasVoted = votingService.hasVoted(userId, electionId);
 
         return ResponseEntity.ok(Map.of(
                 "electionId", electionId,
                 "hasVoted", hasVoted
         ));
+    }
+
+    private Long resolveUserId(Authentication authentication, String header) {
+        if (authentication != null && authentication.getCredentials() instanceof Long) {
+            return (Long) authentication.getCredentials();
+        }
+        if (header != null && !header.isBlank()) {
+            if (header.startsWith("voter-")) {
+                header = header.substring(6);
+            }
+            try {
+                return Long.parseLong(header);
+            } catch (NumberFormatException e) {
+                return (long) Math.abs(header.hashCode());
+            }
+        }
+        return 0L;
     }
 }

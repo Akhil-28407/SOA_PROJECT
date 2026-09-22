@@ -12,4 +12,6 @@
 /Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/voting-service/src/main/java/com/civicvote/voting/exception/InvalidVoteException.java
 /Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/voting-service/src/main/java/com/civicvote/voting/exception/UserAlreadyVotedException.java
 /Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/voting-service/src/main/java/com/civicvote/voting/repository/VoteRepository.java
+/Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/voting-service/src/main/java/com/civicvote/voting/security/JwtAuthenticationFilter.java
+/Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/voting-service/src/main/java/com/civicvote/voting/security/JwtUtil.java
 /Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/voting-service/src/main/java/com/civicvote/voting/service/VotingService.java

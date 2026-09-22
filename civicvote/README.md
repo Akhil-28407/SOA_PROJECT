@@ -2,45 +2,34 @@
 
 ## 🗳️ Project Overview
 
-A secure digital election platform built with **Spring Boot microservices architecture** for organizational voting. The system guarantees strict voter identity verification, one-vote-per-user integrity, anonymous ballot processing, and transparent result calculation.
-
-**Company:** CivicVote Technologies
+A secure digital election platform built with a **Spring Boot microservices architecture** for organizational voting. The system guarantees strict voter identity verification, one-vote-per-user integrity, anonymous ballot processing, and transparent result calculation.
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-                    +----------------------+
-                    |      Frontend        |
-                    | HTML/CSS/JavaScript  |
-                    +----------+-----------+
-                               |
-                               v
-                    +----------------------+
-                    |     API Gateway      |
-                    |        :8080         |
-                    +----------+-----------+
-                               |
-               +---------------+---------------+
-               |               |               |
-               v               v               v
-        +-----------+   +-------------+  +-------------+
-        |   Auth    |   |  Election   |  |   Voting    |
-        |  Service  |   |   Service   |  |   Service   |
-        |   :8081   |   |    :8082    |  | :8083/:8093 |
-        +-----------+   +-------------+  +------+------+
-                                                |
-                                                | OpenFeign
-                                                v
-                                        +---------------+
-                                        |    Result     |
-                                        |    Service    |
-                                        |     :8084     |
-                                        +---------------+
-
-                       Eureka Server :8761
-                  (All services register here)
+                                Eureka Server :8761
+                   (All microservices register here dynamically)
+                                         |
+     +-------------------+---------------+-------------------+
+     |                   |                                   |
+     v                   v                                   v
++-----------+   +-----------------+                 +-----------------+
+|   Auth    |   |    Election     |                 |     Voting      |
+|  Service  |   |     Service     |                 |     Service     |
+|   :8081   |   |      :8082      |                 |      :8083      |
++-----------+   +--------+--------+                 +--------+--------+
+                         ^                                   |
+                         |           OpenFeign               | OpenFeign
+                         +───────────────────────────────────+
+                         |                                   |
+                         v                                   v
+                Candidate Lookup                     +---------------+
+                         ^                           |    Result     |
+                         |                           |    Service     |
+                         +───────────────────────────+     :8084     |
+                                                     +---------------+
 ```
 
 ---
@@ -48,41 +37,31 @@ A secure digital election platform built with **Spring Boot microservices archit
 ## 🛠️ Technology Stack
 
 | Component | Technology |
-|-----------|-----------|
-| Backend | Java 17, Spring Boot 3.3.4 |
-| Database | PostgreSQL 16 |
+|---|---|
+| Backend | Java 17+, Spring Boot 3.3.4 |
+| Database | PostgreSQL 16 (Spring Data JPA) |
 | Security | Spring Security, JWT (jjwt), BCrypt |
 | Service Discovery | Spring Cloud Netflix Eureka |
-| API Gateway | Spring Cloud Gateway |
 | Inter-Service Communication | Spring Cloud OpenFeign |
-| Load Balancing | Spring Cloud LoadBalancer |
-| Frontend | HTML5, CSS3, Vanilla JavaScript |
-| Testing | JUnit 5, Mockito, MockMvc |
-| Deployment | Docker, Docker Compose |
+| Testing | JUnit 5, Mockito, Spring Boot Test |
 
 ---
 
 ## 📦 Microservices
 
 | Service | Port | Database | Responsibility |
-|---------|------|----------|---------------|
-| Eureka Server | 8761 | — | Service Discovery |
-| API Gateway | 8080 | — | Routing, JWT Filter, Load Balancing |
-| Auth Service | 8081 | civicvote_auth | Registration, Login, JWT |
-| Election Service | 8082 | civicvote_election | Election & Candidate CRUD |
-| Voting Service | 8083/8093 | civicvote_voting | Vote Casting, Validation |
-| Result Service | 8084 | civicvote_result | Vote Counting, Results |
+|---|---|---|---|
+| **Eureka Server** | 8761 | — | Service Discovery & Registry |
+| **Auth Service** | 8081 | `civicvote_auth` | User Registration, Login, JWT Generation (BCrypt) |
+| **Election Service** | 8082 | `civicvote_election` | Election & Candidate Management, Admin Role Enforcement |
+| **Voting Service** | 8083 | `civicvote_voting` | Ballot Casting, Duplicate Vote Prevention (`UNIQUE(user_id, election_id)`) |
+| **Result Service** | 8084 | `civicvote_result` | Anonymous Vote Counting, Result & Winner Computation |
 
 ---
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- Java 17+
-- Maven 3.9+
-- PostgreSQL 16+
-
-### 1. Create Databases
+### 1. Create PostgreSQL Databases
 ```sql
 CREATE DATABASE civicvote_auth;
 CREATE DATABASE civicvote_election;
@@ -101,113 +80,65 @@ cd auth-service && mvn spring-boot:run
 # Terminal 3 — Election Service
 cd election-service && mvn spring-boot:run
 
-# Terminal 4 — Voting Service (Instance 1)
+# Terminal 4 — Voting Service
 cd voting-service && mvn spring-boot:run
 
-# Terminal 5 — Voting Service (Instance 2 — Load Balancing)
-cd voting-service && SERVER_PORT=8093 mvn spring-boot:run
-
-# Terminal 6 — Result Service
+# Terminal 5 — Result Service
 cd result-service && mvn spring-boot:run
-
-# Terminal 7 — API Gateway
-cd api-gateway && mvn spring-boot:run
 ```
 
 ### 3. Verify
-- Eureka Dashboard: http://localhost:8761
-- API Gateway: http://localhost:8080
-- Frontend: Open `frontend/index.html` in your browser
+* Eureka Dashboard: `http://localhost:8761`
+* Verify that `AUTH-SERVICE`, `ELECTION-SERVICE`, `VOTING-SERVICE`, and `RESULT-SERVICE` appear registered.
 
 ---
 
-## 🔐 Security Features
+## 🔐 Security & JWT Authentication
 
-- **JWT Authentication** — Stateless token-based auth with configurable secret
-- **BCrypt Password Hashing** — Passwords never stored in plain text
-- **Role-Based Authorization** — ADMIN and VOTER roles
-- **Gateway JWT Filter** — Global authentication at the API Gateway
-- **Anonymous Ballots** — Voter identity never reaches the Result Service
-- **One-Vote-Per-User** — Application-level + PostgreSQL UNIQUE constraint
+* **Stateless JWT**: Signed using HMAC-SHA256 containing `userId`, `username`, `role`, and expiration timestamp.
+* **Direct Microservice Verification**: Each microservice verifies incoming `Authorization: Bearer <token>` requests using its own `JwtUtil` and `JwtAuthenticationFilter`.
+* **BCrypt Password Hashing**: Passwords are never stored in plain text.
+* **Role-Based Access Control**:
+  * `ADMIN`: Can create elections (`POST /elections`), add candidates (`POST /elections/{id}/candidates`), view results.
+  * `VOTER`: Can browse elections (`GET /elections`), cast vote (`POST /votes`). Non-admins receive `403 Forbidden` on admin endpoints.
+* **Tamper-Resistant Identity**: `VotingController` extracts the voter identity directly from verified JWT claims in the Spring Security context.
+* **Anonymous Balloting**: Inter-service communication from Voting Service to Result Service transmits only `{electionId, candidateId}` via OpenFeign without any voter identity.
 
 ---
 
 ## 📋 API Endpoints
 
-### Auth Service
-| Method | Path | Access | Description |
-|--------|------|--------|-------------|
-| POST | /auth/register | Public | Register user |
-| POST | /auth/login | Public | Login and get JWT |
+### Auth Service (`:8081`)
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| POST | `/auth/register` | Public | Register new user (BCrypt hashing) |
+| POST | `/auth/login` | Public | Authenticate user and receive JWT |
 
-### Election Service
-| Method | Path | Access | Description |
-|--------|------|--------|-------------|
-| POST | /elections | ADMIN | Create election |
-| GET | /elections | All | List elections |
-| GET | /elections/{id} | All | Get election |
-| PUT | /elections/{id} | ADMIN | Update election |
-| DELETE | /elections/{id} | ADMIN | Delete election |
-| POST | /elections/{id}/candidates | ADMIN | Add candidate |
-| GET | /elections/{id}/candidates | All | List candidates |
-| GET | /elections/{id}/status | All | Get status |
+### Election Service (`:8082`)
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| POST | `/elections` | ADMIN | Create new election |
+| GET | `/elections` | Authenticated | List all elections with candidates |
+| GET | `/elections/{id}` | Authenticated | Get election details |
+| POST | `/elections/{id}/candidates` | ADMIN | Add candidate to election |
+| GET | `/elections/{id}/candidates` | Authenticated | List candidates for election |
+| GET | `/elections/{id}/status` | Authenticated | Get dynamic election status |
 
-### Voting Service
-| Method | Path | Access | Description |
-|--------|------|--------|-------------|
-| POST | /votes | VOTER | Cast vote |
-| GET | /votes/status/{electionId} | VOTER | Check if voted |
+### Voting Service (`:8083`)
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| POST | `/votes` | VOTER / ADMIN | Cast ballot (prevents duplicate vote) |
+| GET | `/votes/status/{electionId}` | VOTER / ADMIN | Check if authenticated user has voted |
 
-### Result Service
-| Method | Path | Access | Description |
-|--------|------|--------|-------------|
-| POST | /results/vote | Internal | Record vote (from Voting Service) |
-| GET | /results/{electionId} | All | Get results |
-| GET | /results/{electionId}/winner | All | Get winner |
+### Result Service (`:8084`)
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| POST | `/results/vote` | Internal | Record vote tally from Voting Service |
+| GET | `/results/{electionId}` | Authenticated | View vote counts and percentages |
+| GET | `/results/{electionId}/winner` | Authenticated | Determine winning candidate |
 
 ---
 
-## 🧪 Demo Flow
+## 🧪 Demonstration Guide
 
-1. **Eureka** — Open http://localhost:8761, verify all services registered
-2. **Admin Login** — Register as ADMIN, login
-3. **Create Election** — "Student Council Election 2026", add 3 candidates
-4. **Voter Login** — Register as VOTER, login
-5. **Cast Vote** — Select candidate, vote → "Vote successfully recorded"
-6. **Duplicate Vote** — Try again → 409 Conflict
-7. **View Results** — See vote counts, percentages, winner
-8. **Security Demo** — Call API without JWT → 401; VOTER on admin endpoint → 403
-
----
-
-## 📁 Project Structure
-
-```
-civicvote/
-├── eureka-server/          # Service Discovery
-├── api-gateway/            # API Gateway + JWT Filter
-├── auth-service/           # Authentication + JWT
-├── election-service/       # Election Management
-├── voting-service/         # Vote Casting
-├── result-service/         # Result Calculation
-├── frontend/               # HTML/CSS/JS UI
-│   ├── index.html
-│   ├── login.html
-│   ├── register.html
-│   ├── admin-dashboard.html
-│   ├── elections.html
-│   ├── vote.html
-│   ├── results.html
-│   ├── css/style.css
-│   └── js/
-├── docker-compose.yml
-├── init-db.sh
-├── docs/
-└── README.md
-```
-
----
-
-## 👨‍💻 Authors
-
-CivicVote Technologies Team
+For detailed step-by-step review instructions, curl commands, and expected JSON outputs for Rubrics 1, 2, and 3, see [`docs/rubric-demo-guide.md`](docs/rubric-demo-guide.md).

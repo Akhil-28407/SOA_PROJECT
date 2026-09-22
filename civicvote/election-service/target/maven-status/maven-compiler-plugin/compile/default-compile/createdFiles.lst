@@ -1,5 +1,6 @@
 com/civicvote/election/exception/ElectionNotFoundException.class
 com/civicvote/election/repository/CandidateRepository.class
+com/civicvote/election/security/JwtUtil.class
 com/civicvote/election/dto/CandidateResponse.class
 com/civicvote/election/dto/ElectionRequest.class
 com/civicvote/election/ElectionServiceApplication.class
@@ -13,5 +14,6 @@ com/civicvote/election/entity/Candidate.class
 com/civicvote/election/entity/ElectionStatus.class
 com/civicvote/election/dto/CandidateRequest.class
 com/civicvote/election/entity/Election.class
+com/civicvote/election/security/JwtAuthenticationFilter.class
 com/civicvote/election/dto/ElectionResponse.class
 com/civicvote/election/dto/ErrorResponse.class

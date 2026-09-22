@@ -2,10 +2,12 @@ com/civicvote/voting/dto/VoteRequest.class
 com/civicvote/voting/client/ElectionServiceClient.class
 com/civicvote/voting/client/ResultServiceClient.class
 com/civicvote/voting/exception/ElectionNotActiveException.class
+com/civicvote/voting/security/JwtUtil.class
 com/civicvote/voting/exception/GlobalExceptionHandler.class
 com/civicvote/voting/VotingServiceApplication.class
 com/civicvote/voting/exception/InvalidVoteException.class
 com/civicvote/voting/entity/Vote.class
+com/civicvote/voting/security/JwtAuthenticationFilter.class
 com/civicvote/voting/dto/VoteResponse.class
 com/civicvote/voting/controller/VotingController.class
 com/civicvote/voting/service/VotingService.class

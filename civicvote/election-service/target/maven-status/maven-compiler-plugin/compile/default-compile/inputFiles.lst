@@ -14,4 +14,6 @@
 /Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/election-service/src/main/java/com/civicvote/election/exception/GlobalExceptionHandler.java
 /Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/election-service/src/main/java/com/civicvote/election/repository/CandidateRepository.java
 /Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/election-service/src/main/java/com/civicvote/election/repository/ElectionRepository.java
+/Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/election-service/src/main/java/com/civicvote/election/security/JwtAuthenticationFilter.java
+/Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/election-service/src/main/java/com/civicvote/election/security/JwtUtil.java
 /Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/election-service/src/main/java/com/civicvote/election/service/ElectionService.java

@@ -8,4 +8,6 @@
 /Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/result-service/src/main/java/com/civicvote/result/entity/Result.java
 /Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/result-service/src/main/java/com/civicvote/result/exception/GlobalExceptionHandler.java
 /Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/result-service/src/main/java/com/civicvote/result/repository/ResultRepository.java
+/Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/result-service/src/main/java/com/civicvote/result/security/JwtAuthenticationFilter.java
+/Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/result-service/src/main/java/com/civicvote/result/security/JwtUtil.java
 /Users/akhilbulusu/Documents/KLU/2026-2027/SOA_MICROSERVICES/Project/civicvote/result-service/src/main/java/com/civicvote/result/service/ResultService.java

@@ -34,18 +34,18 @@ public class VotingService {
     /**
      * Complete vote validation and processing flow:
      * 1. Validate JWT (done at gateway)
-     * 2. Extract authenticated user (from headers)
+     * 2. Extract authenticated user_id
      * 3. Check election exists
      * 4. Check election is ACTIVE
      * 5. Check candidate exists
      * 6. Check candidate belongs to election
-     * 7. Check whether voter already voted
+     * 7. Check whether voter already voted (user_id + election_id)
      * 8. Save vote
      * 9. Notify Result Service (anonymous - only electionId + candidateId)
      * 10. Return success
      */
     @Transactional
-    public VoteResponse castVote(VoteRequest request, String voterReference) {
+    public VoteResponse castVote(VoteRequest request, Long userId) {
         Long electionId = request.getElectionId();
         Long candidateId = request.getCandidateId();
 
@@ -69,6 +69,9 @@ public class VotingService {
             boolean candidateValid = candidates.stream()
                     .anyMatch(c -> {
                         Object cId = c.get("candidateId");
+                        if (cId == null) {
+                            cId = c.get("id");
+                        }
                         if (cId instanceof Number) {
                             return ((Number) cId).longValue() == candidateId;
                         }
@@ -84,13 +87,13 @@ public class VotingService {
             throw new InvalidVoteException("Unable to validate candidate: " + e.getMessage());
         }
 
-        // Step 7: Check for duplicate vote (application-level)
-        if (voteRepository.existsByVoterReferenceAndElectionId(voterReference, electionId)) {
+        // Step 7: Check for duplicate vote (user_id + election_id)
+        if (voteRepository.existsByUserIdAndElectionId(userId, electionId)) {
             throw new UserAlreadyVotedException("User has already voted in this election");
         }
 
         // Step 8: Save vote
-        Vote vote = new Vote(voterReference, electionId, candidateId);
+        Vote vote = new Vote(userId, electionId, candidateId);
         Vote savedVote = voteRepository.save(vote);
 
         // Step 9: Notify Result Service — ANONYMOUS (only electionId + candidateId)
@@ -101,15 +104,12 @@ public class VotingService {
         try {
             resultServiceClient.recordVote(anonymousVoteData);
         } catch (Exception e) {
-            // If Result Service fails, we should not silently succeed
-            // The vote has been saved but result not incremented — log error
-            // In production, we'd use a compensation mechanism or event queue
             throw new RuntimeException("Vote saved but result service notification failed: " + e.getMessage());
         }
 
         // Step 10: Return success
         return new VoteResponse(
-                savedVote.getVoteId(),
+                savedVote.getId(),
                 savedVote.getElectionId(),
                 savedVote.getCandidateId(),
                 savedVote.getCastAt(),
@@ -117,7 +117,32 @@ public class VotingService {
         );
     }
 
+    @Transactional
+    public VoteResponse castVote(VoteRequest request, String voterReference) {
+        Long userId = parseUserId(voterReference);
+        return castVote(request, userId);
+    }
+
+    public boolean hasVoted(Long userId, Long electionId) {
+        return voteRepository.existsByUserIdAndElectionId(userId, electionId);
+    }
+
     public boolean hasVoted(String voterReference, Long electionId) {
-        return voteRepository.existsByVoterReferenceAndElectionId(voterReference, electionId);
+        Long userId = parseUserId(voterReference);
+        return hasVoted(userId, electionId);
+    }
+
+    private static Long parseUserId(String ref) {
+        if (ref == null) return null;
+        if (ref.startsWith("voter-")) {
+            try {
+                return Long.parseLong(ref.substring(6));
+            } catch (NumberFormatException ignored) {}
+        }
+        try {
+            return Long.parseLong(ref);
+        } catch (NumberFormatException e) {
+            return (long) Math.abs(ref.hashCode());
+        }
     }
 }

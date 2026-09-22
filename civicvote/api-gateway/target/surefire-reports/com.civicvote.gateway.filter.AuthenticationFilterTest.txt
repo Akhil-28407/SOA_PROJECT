@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.civicvote.gateway.filter.AuthenticationFilterTest
--------------------------------------------------------------------------------
-Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.410 s -- in com.civicvote.gateway.filter.AuthenticationFilterTest
